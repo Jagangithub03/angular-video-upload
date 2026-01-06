@@ -1,15 +1,13 @@
-# Angular
-.angular/
+# Angular cache
 .angular/cache/
 
-# Node
+# Dependencies
 node_modules/
 
-# Build
+# Build output
 dist/
-out-tsc/
 
-# IDE
+# IDEs
 .vscode/
 .idea/
 
@@ -17,5 +15,5 @@ out-tsc/
 .DS_Store
 Thumbs.db
 
-# Env
+# Environment
 .env
