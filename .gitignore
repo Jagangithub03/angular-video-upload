@@ -1,0 +1,21 @@
+# Angular
+.angular/
+.angular/cache/
+
+# Node
+node_modules/
+
+# Build
+dist/
+out-tsc/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
