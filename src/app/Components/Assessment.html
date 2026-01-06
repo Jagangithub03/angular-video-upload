@@ -1,0 +1,310 @@
+
+<div class="page-wrapper">
+  
+  
+  <div class="top-nav">
+    <div class="top-nav-left">
+      <h1 class="page-title">Content Upload</h1>
+    </div>
+    
+    <div class="top-nav-right">
+  
+     
+      <button mat-icon-button class="notification-btn">
+        <mat-icon>notifications_none</mat-icon>
+      </button>
+
+    
+      <div class="user-profile" [matMenuTriggerFor]="userMenu">
+          <button mat-icon-button class="account">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+        <div class="user-info">
+          <span class="welcome-text">Welcome Back</span>
+          <span class="user-name">Jagan P</span>
+        </div>
+      </div>
+
+      <mat-menu #userMenu="matMenu">
+        <button mat-menu-item>
+          <mat-icon>person</mat-icon>
+          <span>Profile</span>
+        </button>
+        <button mat-menu-item>
+          <mat-icon>settings</mat-icon>
+          <span>Settings</span>
+        </button>
+        <button mat-menu-item>
+          <mat-icon>logout</mat-icon>
+          <span>Logout</span>
+        </button>
+      </mat-menu>
+    </div>
+  </div>
+
+
+ 
+
+  <div class="content">
+  
+    <div class="header">
+      <div class="actions">
+        <button mat-raised-button color="primary">Export</button>
+        <button mat-raised-button color="primary" (click)="fileInput.click()">
+          <mat-icon>add</mat-icon> Upload Video
+        </button>
+        <input hidden type="file" #fileInput accept="video/*" (change)="onFileChosen($event)">
+      </div>
+    </div>
+
+    
+   
+    <div *ngIf="previewUrl" class="upload-preview">
+      <video [src]="previewUrl" controls class="preview-video"></video>
+      <div class="upload-info">
+        <p class="file-name"><strong>{{ fileName }}</strong></p>
+        <p class="file-duration">Duration: {{ videoDuration }}</p>
+
+      
+        <div *ngIf="thumbnailUrl" class="thumbnail-preview">
+          <p class="label">Generated Thumbnail:</p>
+          <img [src]="thumbnailUrl" alt="Thumbnail" class="thumb-preview">
+        </div>
+
+        <div class="upload-actions">
+          <button mat-raised-button color="primary" (click)="upload()">Upload</button>
+          <button mat-stroked-button color="warn" (click)="cancelUpload()">Cancel</button>
+        </div>
+
+        <mat-progress-bar 
+          *ngIf="uploadingProgress !== undefined"
+          mode="determinate" 
+          [value]="uploadingProgress"
+          class="upload-progress">
+        </mat-progress-bar>
+
+        <span *ngIf="uploadingProgress !== undefined" class="progress-text">
+          {{ uploadingProgress }}%
+        </span>
+      </div>
+    </div>
+
+    
+
+    <mat-tab-group class="content-tabs">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">videocamera</mat-icon>
+          Video
+        </ng-template>
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">audiotrack</mat-icon>
+          Audio
+        </ng-template>
+      </mat-tab>
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">image</mat-icon>
+          Image
+        </ng-template>
+      </mat-tab>
+    </mat-tab-group>
+
+   
+    <div class="filters">
+      <div class="filter-left">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput placeholder="Search...">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-select placeholder="Tags">
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-select placeholder="Content Type">
+            <mat-option value="video">Video</mat-option>
+            <mat-option value="audio">Audio</mat-option>
+            <mat-option value="image">Image</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-select placeholder="Last Month">
+            <mat-option value="today">Today</mat-option>
+            <mat-option value="week">Last Week</mat-option>
+            <mat-option value="month">Last Month</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field">
+          <input matInput [matDatepicker]="picker" placeholder="DD/MM/YYYY">
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <div class="filter-right">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-select placeholder="Visibility">
+          </mat-select>
+        </mat-form-field>
+
+        <div class="select-multiple">
+          <mat-checkbox color="primary" checked>Select Multiple</mat-checkbox>
+        </div>
+      </div>
+    </div>
+
+    
+    
+    <div *ngIf="selectedFiles.length" class="bulk-bar">
+      <span class="bulk-count">{{ selectedFiles.length }} items selected</span>
+
+      <div class="bulk-actions">
+        <button mat-stroked-button color="warn" (click)="deleteSelected()">
+          <mat-icon>delete</mat-icon> Delete
+        </button>
+
+        <button mat-stroked-button color="primary" (click)="toggleAllVisibility()">
+          <mat-icon>visibility</mat-icon> Visible all
+        </button>
+      </div>
+    </div>
+
+    
+
+    <div class="table-container">
+      <table mat-table [dataSource]="files" class="content-table">
+
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef>
+            <mat-checkbox 
+              [checked]="selectedFiles.length === files.length && files.length > 0"
+              [indeterminate]="selectedFiles.length > 0 && selectedFiles.length < files.length"
+              (change)="selectAll($event)">
+            </mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let f">
+            <mat-checkbox
+              [checked]="selectedFiles.includes(f.id)"
+              (change)="selectFile(f.id, $event)">
+            </mat-checkbox>
+          </td>
+        </ng-container>
+
+
+
+
+        <ng-container matColumnDef="index">
+          <th mat-header-cell *matHeaderCellDef>S.NO</th>
+          <td mat-cell *matCellDef="let f; let i = index">{{ i + 1 }}</td>
+        </ng-container>
+
+       <ng-container matColumnDef="about">
+          <th mat-header-cell *matHeaderCellDef>ABOUT VIDEO</th>
+          <td mat-cell *matCellDef="let f">
+            <div class="about-video">
+              <div class="video-thumbnail">
+                <img *ngIf="f.thumbnailUrl" [src]="f.thumbnailUrl" class="thumb">
+                <div *ngIf="!f.thumbnailUrl" class="thumb thumb-placeholder">
+                  <mat-icon>videocam</mat-icon>
+                </div>
+              </div>
+              <div class="video-details">
+                <strong class="video-title">{{ f.name }}</strong>
+                <div class="video-meta">
+                  <mat-icon class="meta-icon">schedule</mat-icon>
+                  <span>{{ f.duration || '00:00' }}</span>
+
+                  <!-- Preview Button -->
+                  <strong class="tag" (click)="previewVideo(f.url)">Preview</strong>
+                </div>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+
+     
+        <ng-container matColumnDef="tags">
+          <th mat-header-cell *matHeaderCellDef>TAGS USED</th>
+          <td mat-cell *matCellDef="let f">
+            <span class="tag-count">{{ f.tags || 3 }}</span>
+          </td>
+        </ng-container>
+
+     
+        <ng-container matColumnDef="size">
+          <th mat-header-cell *matHeaderCellDef>SIZE</th>
+          <td mat-cell *matCellDef="let f">{{ f.size || '1GB' }}</td>
+        </ng-container>
+
+     
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>STATUS</th>
+          <td mat-cell *matCellDef="let f">
+            <div class="status-cell">
+              <mat-slide-toggle
+                color="primary"
+                [checked]="f.status === 'Visible'"
+                (change)="toggle(f)">
+              </mat-slide-toggle>
+              <span class="status-text">{{ f.status }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+       
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>UPLOADED DATE</th>
+          <td mat-cell *matCellDef="let f">{{ f.uploadedDate || '23/05/2025' }}</td>
+        </ng-container>
+
+       
+        <ng-container matColumnDef="converted">
+          <th mat-header-cell *matHeaderCellDef>CONVERTED</th>
+          <td mat-cell *matCellDef="let f">
+            <mat-icon *ngIf="f.converted !== false" class="converted-icon success">check_circle</mat-icon>
+            <mat-icon *ngIf="f.converted === false" class="converted-icon pending">cancel</mat-icon>
+          </td>
+        </ng-container>
+
+     
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef>ACTION</th>
+          <td mat-cell *matCellDef="let f">
+            <div class="action-buttons">
+              <button mat-icon-button color="primary" matTooltip="Edit">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="remove(f)" matTooltip="Delete">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+      </table>
+
+     
+
+      
+      <div *ngIf="!files || files.length === 0" class="empty-state">
+        <mat-icon>video_library</mat-icon>
+        <p>No videos uploaded yet</p>
+        <button mat-raised-button color="primary" (click)="fileInput.click()">
+          Upload Your First Video
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
